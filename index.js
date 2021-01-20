@@ -7,7 +7,10 @@ const getPlayer = async (summName) => {
   try {
     // Makes the summoner request
     const summ = await axios.get(
-      `https://br1.api.riotgames.com/lol/summoner/v4/summoners/by-name/${summName}?api_key=${apiKey}`,
+      `https://br1.api.riotgames.com/lol/summoner/v4/summoners/by-name/${encodeURI(
+        summName,
+        'UTF-8',
+      )}?api_key=${apiKey}`,
     );
 
     // Gets the ID for the summoner
