@@ -1,11 +1,13 @@
+require('dotenv').config();
 const axios = require('axios');
 const Discord = require('discord.js');
+const apiKey = process.env.RIOT_API_KEY;
 
 const getPlayer = async (summName) => {
   try {
     // Makes the summoner request
     const summ = await axios.get(
-      `https://br1.api.riotgames.com/lol/summoner/v4/summoners/by-name/${summName}?api_key=RGAPI-daf5467b-a5a5-4c96-8973-ae1590899068`,
+      `https://br1.api.riotgames.com/lol/summoner/v4/summoners/by-name/${summName}?api_key=${apiKey}`,
     );
 
     // Gets the ID for the summoner
@@ -13,10 +15,8 @@ const getPlayer = async (summName) => {
 
     // Makes the spectator request
     const spectator = await axios.get(
-      `https://br1.api.riotgames.com/lol/spectator/v4/active-games/by-summoner/${summID}?api_key=RGAPI-daf5467b-a5a5-4c96-8973-ae1590899068`,
+      `https://br1.api.riotgames.com/lol/spectator/v4/active-games/by-summoner/${summID}?api_key=${apiKey}`,
     );
-
-    console.log(typeof spectator.status);
 
     let summsList = '';
 
@@ -31,7 +31,7 @@ const getPlayer = async (summName) => {
       return 'notPlaying';
     }
   } catch (err) {
-    console.error(err);
+    console.error(err.message);
     return 'notPlaying';
   }
 };
