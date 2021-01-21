@@ -33,15 +33,22 @@ const createChannel = async (msg, participants, gameId) => {
     permissionOverwrites.push(permFields);
   }
 
-  await msg.guild.channels.create(`Jogo: ${gameId}`, {
+  const channel = await msg.guild.channels.create(`Jogo: ${gameId}`, {
     type: 'voice',
     userLimit: 5,
     permissionOverwrites,
   });
 
-  return 'success';
+  return { status: 'success', channel };
+};
+
+const deleteChannel = (guild) => {
+  const fetchedChannel = guild.channels.cache.get('801726202368360458');
+
+  console.log(fetchedChannel);
 };
 
 module.exports = {
   createChannel,
+  deleteChannel,
 };

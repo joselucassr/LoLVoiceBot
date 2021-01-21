@@ -8,7 +8,7 @@ const { inQuot, inArgs } = require('./utils/getInput');
 const { simpleEmbed } = require('./utils/embed');
 const { notifyNewGame } = require('./utils/sendDM');
 const { registerPlayer } = require('./commands/managePlayer');
-const { joinGame } = require('./commands/manageGame');
+const { joinGame, stopGame } = require('./commands/manageGame');
 
 // Create an instance of a Discord client
 const client = new Discord.Client();
@@ -73,6 +73,13 @@ client.on('message', async (msg) => {
           `Basta acessar o canal **Jogo: ${returnObj.channel.channel_game_id}** no topo da lista de canais.`,
         );
       }
+      break;
+
+    case 'stop':
+      // 801023966126145576
+
+      const guild = await client.guilds.fetch('801023966126145576');
+      stopGame(msg, guild);
       break;
   }
 });

@@ -1,9 +1,10 @@
 // Function imports
 const { getPlayerbyDisId, getSummoner, getMatch } = require('./managePlayer');
-const { createChannel } = require('./manageChannel');
+const { createChannel, deleteChannel } = require('./manageChannel');
 
 // Model imports
 const Channel = require('../models/Channel');
+const Player = require('../models/Player');
 
 const joinGame = async (author, msg) => {
   const player = await getPlayerbyDisId(author.id);
@@ -48,7 +49,8 @@ const joinGame = async (author, msg) => {
 
   const channelCheck = await createChannel(msg, playerTeam, match.data.gameId);
 
-  if (channelCheck === 'success') {
+  if (channelCheck.status === 'success') {
+    channelFields.channel_id = channelCheck.channel.id;
     const newChannel = await Channel(channelFields);
     await newChannel.save();
 
@@ -56,6 +58,22 @@ const joinGame = async (author, msg) => {
   }
 };
 
+const stopGame = (msg, guild) => {
+  try {
+    let player = await Player.findOne({ player_discord_id: msg.author.id })
+  
+    if (!player){
+      return {status: 'playerNotFound'}
+    }
+    
+    deleteChannel(guild);
+  } catch (err) {
+    console.log(err.message);
+    return { status: 'error' };
+  }
+};
+
 module.exports = {
   joinGame,
+  stopGame,
 };
