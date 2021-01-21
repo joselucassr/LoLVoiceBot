@@ -10,6 +10,9 @@ const channelSchema = new mongoose.Schema({
   channel_game_id: {
     type: String,
   },
+  channel_invite_link: {
+    type: String,
+  },
   channel_game_is_active: {
     type: Boolean,
     default: true,

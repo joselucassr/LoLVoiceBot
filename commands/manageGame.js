@@ -55,7 +55,15 @@ const joinGame = async (author_id, guild) => {
     match.data.gameId,
   );
 
+  const inviteLink = await channelCheck.createInvite({
+    temporary: false,
+    maxAge: 0,
+    maxUses: 99,
+    unique: true,
+  });
+
   if (channelCheck.status === 'success') {
+    channelFields.channel_invite_link = inviteLink;
     channelFields.channel_id = channelCheck.channel.id;
     const newChannel = await Channel(channelFields);
     await newChannel.save();
