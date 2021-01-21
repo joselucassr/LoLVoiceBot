@@ -7,7 +7,11 @@ const Player = require('../models/Player');
 
 const notifyNewGame = async (users, channel) => {
   try {
-    const { channel_participants, channel_game_id } = channel;
+    const {
+      channel_participants,
+      channel_game_id,
+      channel_invite_link,
+    } = channel;
     let playersDisIds = [];
 
     for (let i = 0; i < channel_participants.length; i++) {
@@ -24,16 +28,29 @@ const notifyNewGame = async (users, channel) => {
       const member = await users.fetch(playersDisIds[i], true);
 
       const embed = new Discord.MessageEmbed()
-        .setTitle(`Canal do "Jogo: ${channel_game_id}" criado`)
+        .setTitle(`• Canal criado! criado`)
         .setDescription(
-          `O canal pode ser encontrado no topo da lista de nosso servidor.`,
+          `➜ O canal do **Jogo: ${channel_game_id}** pode ser encontrado no topo da lista de canais do servidor.`,
         )
+        .setThumbnail(
+          'https://static.wikia.nocookie.net/leagueoflegends/images/c/c1/Nexus_Blitz_Sudden_Death_event.png',
+        )
+        .setImage(
+          'https://static.wikia.nocookie.net/leagueoflegends/images/1/13/Fat_Poro.jpg',
+        )
+        .spliceFields(0, 0, [
+          {
+            name: '- Como que faz?',
+            value:
+              '**__É só acessar o servidor e clicar no canal lá em cima.__ \nOu clicar em "*Entrar na chamada de voz*" na mensagem em cima dessa.**',
+          },
+        ])
         .setFooter('Enviado em:')
         .setTimestamp(Date.now())
         .setColor('#5bc0e3');
 
       member
-        .send(``, embed)
+        .send(channel_invite_link, embed)
         .then()
         .catch((err) => {
           console.log(err);
@@ -50,10 +67,22 @@ const askUserForGame = async (users, player_discord_id) => {
   const member = await users.fetch(player_discord_id, true);
 
   const embed = new Discord.MessageEmbed()
-    .setTitle(`Deseja criar uma sala de Voice Chat?`)
+    .setTitle(`• Percebi que entrou em uma partida.`)
     .setDescription(
-      `O canal pode ser encontrado no topo da lista de nosso servidor.`,
+      `<:missing:801812715685412915> Deseja criar uma sala de Voice Chat com seu time?`,
     )
+    .setThumbnail(
+      'https://static.wikia.nocookie.net/leagueoflegends/images/2/29/Honor_GG.png',
+    )
+    .setImage(
+      'https://static.wikia.nocookie.net/leagueoflegends/images/1/13/Fat_Poro.jpg',
+    )
+    .spliceFields(0, 0, [
+      {
+        name: '- Como que faz?',
+        value: '__Basta clicar na reação ✅ abaixo.__',
+      },
+    ])
     .setFooter('Convite de Voice')
     .setTimestamp(Date.now())
     .setColor('#5bc0e3');
