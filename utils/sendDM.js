@@ -45,6 +45,28 @@ const notifyNewGame = async (users, channel) => {
   }
 };
 
+const askUserForGame = async (users, player_discord_id) => {
+  const member = await users.fetch(player_discord_id, true);
+
+  const embed = new Discord.MessageEmbed()
+    .setTitle(`Deseja criar uma sala de Voice Chat?`)
+    .setDescription(
+      `O canal pode ser encontrado no topo da lista de nosso servidor.`,
+    )
+    .setFooter('Convite de Voice')
+    .setTimestamp(Date.now())
+    .setColor('#5bc0e3');
+
+  member
+    .send(``, embed)
+    .then((msg) => msg.react('✅'))
+    .catch((err) => {
+      console.log(err);
+      return 0;
+    });
+};
+
 module.exports = {
   notifyNewGame,
+  askUserForGame,
 };

@@ -22,6 +22,31 @@ client.on('ready', () => {
   console.log('I am ready!');
 });
 
+client.on('presenceUpdate', (oldPresence, newPresence) => {
+  // LoL App ID 401518684763586560 , States: "Em partida" "Na Seleção de Campeões"
+
+  const checkDuplicates = oldPresence.activities.find(
+    (e) => e.applicationID === '401518684763586560',
+  );
+
+  const foundGame = newPresence.activities.find(
+    (e) => e.applicationID === '401518684763586560',
+  );
+
+  if (
+    checkDuplicates &&
+    foundGame &&
+    checkDuplicates.state === foundGame.state
+  ) {
+    return 0;
+  }
+
+  // if (foundMatch && foundMatch.state === 'Na Seleção de Campeões') {
+  if (foundGame) {
+    askUserForGame(client.users, newPresence.userID);
+  }
+});
+
 const prefix = 'l!';
 // Create an event listener for messages
 client.on('message', async (msg) => {
