@@ -44,7 +44,6 @@ const createChannel = async (msg, participants, gameId) => {
 
 const deleteChannel = (guild, channel_id) => {
   const fetchedChannel = guild.channels.cache.get(channel_id);
-
   fetchedChannel.delete();
 };
 

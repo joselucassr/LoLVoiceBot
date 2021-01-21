@@ -62,14 +62,19 @@ const joinGame = async (author, msg) => {
 
 const stopGame = async (msg, guild) => {
   try {
-    let player = await Player.findOne({ player_discord_id: msg.author.id });
+    let player = await Player.findOne({
+      player_discord_id: msg.author.id,
+    });
 
     if (!player) {
       return { status: 'playerNotFound' };
     }
 
-    let channel = await Channel.findOne({
-      channel_creator_dis_id: msg.author.id,
+    const channel = await Channel.findOne({
+      $and: [
+        { channel_creator_dis_id: msg.author.id },
+        { channel_game_is_active: true },
+      ],
     });
 
     if (!channel) {
@@ -77,7 +82,7 @@ const stopGame = async (msg, guild) => {
     }
 
     channel.channel_game_is_active = false;
-    channel.save();
+    await channel.save();
 
     deleteChannel(guild, channel.channel_id);
   } catch (err) {
