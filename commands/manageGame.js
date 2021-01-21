@@ -6,8 +6,8 @@ const { createChannel, deleteChannel } = require('./manageChannel');
 const Channel = require('../models/Channel');
 const Player = require('../models/Player');
 
-const joinGame = async (author, msg) => {
-  const player = await getPlayerbyDisId(author.id);
+const joinGame = async (author_id, guild) => {
+  const player = await getPlayerbyDisId(author_id);
 
   if (player.status === 'error' || player.status === 'notFound') {
     return { status: player.status };
@@ -43,13 +43,17 @@ const joinGame = async (author, msg) => {
   );
 
   let channelFields = {
-    channel_creator_dis_id: author.id,
+    channel_creator_dis_id: author_id,
     channel_game_id: match.data.gameId,
     channel_team_id: activePlayer.teamId,
     channel_participants: playerTeam,
   };
 
-  const channelCheck = await createChannel(msg, playerTeam, match.data.gameId);
+  const channelCheck = await createChannel(
+    guild,
+    playerTeam,
+    match.data.gameId,
+  );
 
   if (channelCheck.status === 'success') {
     channelFields.channel_id = channelCheck.channel.id;
@@ -60,10 +64,10 @@ const joinGame = async (author, msg) => {
   }
 };
 
-const stopGame = async (msg, guild) => {
+const stopGame = async (author_id, guild) => {
   try {
     let player = await Player.findOne({
-      player_discord_id: msg.author.id,
+      player_discord_id: author_id,
     });
 
     if (!player) {
@@ -72,7 +76,7 @@ const stopGame = async (msg, guild) => {
 
     const channel = await Channel.findOne({
       $and: [
-        { channel_creator_dis_id: msg.author.id },
+        { channel_creator_dis_id: author_id },
         { channel_game_is_active: true },
       ],
     });

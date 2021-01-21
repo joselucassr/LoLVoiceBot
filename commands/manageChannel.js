@@ -1,6 +1,6 @@
 const Player = require('../models/Player');
 
-const createChannel = async (msg, participants, gameId) => {
+const createChannel = async (guild, participants, gameId) => {
   let playersDisIds = [];
   let unavailablePlayers = [];
 
@@ -19,7 +19,7 @@ const createChannel = async (msg, participants, gameId) => {
   let permissionOverwrites = [
     {
       type: 'role',
-      id: msg.guild.roles.everyone.id,
+      id: guild.roles.everyone.id,
       deny: ['VIEW_CHANNEL', 'CONNECT'],
     },
   ];
@@ -33,7 +33,7 @@ const createChannel = async (msg, participants, gameId) => {
     permissionOverwrites.push(permFields);
   }
 
-  const channel = await msg.guild.channels.create(`Jogo: ${gameId}`, {
+  const channel = await guild.channels.create(`Jogo: ${gameId}`, {
     type: 'voice',
     userLimit: 5,
     permissionOverwrites,
