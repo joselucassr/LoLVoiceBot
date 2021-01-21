@@ -42,6 +42,7 @@ const joinGame = async (author, msg) => {
   );
 
   let channelFields = {
+    channel_creator_dis_id = author.id,
     channel_game_id: match.data.gameId,
     channel_team_id: activePlayer.teamId,
     channel_participants: playerTeam,
@@ -65,8 +66,17 @@ const stopGame = (msg, guild) => {
     if (!player){
       return {status: 'playerNotFound'}
     }
+
+    let channel = await Channel.findOne({ channel_creator_dis_id: msg.author.id })
+
+    if (!channel){
+      return {status: 'channelNotFound'}
+    }
+
+    channel.channel_game_is_active = false
+    channel.save()
     
-    deleteChannel(guild);
+    deleteChannel(guild, channel_channel_id);
   } catch (err) {
     console.log(err.message);
     return { status: 'error' };

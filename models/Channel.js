@@ -4,6 +4,9 @@ const channelSchema = new mongoose.Schema({
   channel_id: {
     type: String,
   },
+  channel_creator_dis_id: {
+    type: String,
+  },
   channel_game_id: {
     type: String,
   },
