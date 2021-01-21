@@ -1,51 +1,23 @@
 require('dotenv').config();
-const axios = require('axios');
+
+// Module imports
 const Discord = require('discord.js');
-const apiKey = process.env.RIOT_API_KEY;
 
-const getPlayer = async (summName) => {
-  try {
-    // Makes the summoner request
-    const summ = await axios.get(
-      `https://br1.api.riotgames.com/lol/summoner/v4/summoners/by-name/${encodeURI(
-        summName,
-        'UTF-8',
-      )}?api_key=${apiKey}`,
-    );
-
-    // Gets the ID for the summoner
-    const summID = summ.data.id;
-
-    // Makes the spectator request
-    const spectator = await axios.get(
-      `https://br1.api.riotgames.com/lol/spectator/v4/active-games/by-summoner/${summID}?api_key=${apiKey}`,
-    );
-
-    let summsList = '';
-
-    if (spectator.status === 200) {
-      for (let i = 0; i < spectator.data.participants.length; i++) {
-        summsList =
-          summsList + `${spectator.data.participants[i].summonerName}, \n`;
-      }
-      return summsList;
-    } else {
-      console.log('Aqui?');
-      return 'notPlaying';
-    }
-  } catch (err) {
-    console.error(err.message);
-    return 'notPlaying';
-  }
-};
+// Function imports
+const { inQuot, inArgs } = require('./utils/getInput');
+const { simpleEmbed } = require('./utils/embed');
+const { notifyNewGame } = require('./utils/sendDM');
+const { registerPlayer } = require('./commands/managePlayer');
+const { joinGame } = require('./commands/manageGame');
 
 // Create an instance of a Discord client
 const client = new Discord.Client();
 
-/**
- * The ready event is vital, it means that only _after_ this will your bot start reacting to information
- * received from Discord
- */
+// Database
+const connectDB = require('./config/db');
+connectDB();
+
+// Bot is ready
 client.on('ready', () => {
   console.log('I am ready!');
 });
@@ -54,36 +26,56 @@ const prefix = 'l!';
 // Create an event listener for messages
 client.on('message', async (msg) => {
   if (!msg.content.startsWith(prefix) || msg.author.bot) return;
+  msg.delete();
 
   const args = msg.content.slice(prefix.length).trim().split(/ +/);
   const command = args.shift().toLocaleLowerCase();
 
   switch (command) {
-    case 'search':
-      if (!msg.content.match(/"([^"]+)"/)) {
-        return await msg.channel.send(
-          `Por favor digite o nome de invocador entre áspas`,
+    case 'register':
+      let summName = await inQuot(msg);
+      let args = await inArgs(msg);
+
+      if (summName === 'stop') {
+        return 0;
+      }
+      await registerPlayer(msg, summName, args);
+
+      break;
+
+    case 'join':
+      const returnObj = await joinGame(msg.author, msg);
+
+      if (returnObj.status === 'success') {
+        notifyNewGame(client.users, returnObj.channel);
+      }
+
+      if (returnObj.status === 'notFound') {
+        return await simpleEmbed(
+          msg,
+          'Você ainda não foi registrado',
+          `Basta enviar uma mensagem para um de nossos moderadores pelo lol e aguardar.`,
         );
       }
 
-      let summName = msg.content.match(/"([^"]+)"/)[1].trim();
-
-      if (!summName) {
-        return await msg.channel.send(`Por favor não deixe em branco`);
+      if (returnObj.status === 'notPlaying') {
+        return await simpleEmbed(
+          msg,
+          'Você ainda não está em partida',
+          `Tenha certeza de estar pelo menos na tela de carregamento da partida **(logo após as escolhas de campeões)**.`,
+        );
       }
 
-      const summ = await getPlayer(summName);
-
-      if (summ === 'notPlaying') {
-        return await msg.channel.send(`O invocador não está jogando`);
+      if (returnObj.status === 'channelExists') {
+        return await simpleEmbed(
+          msg,
+          'O canal da sua partida já existe',
+          `Basta acessar o canal **Jogo: ${returnObj.channel.channel_game_id}** no topo da lista de canais.`,
+        );
       }
-
-      await msg.channel.send(`${summ}`);
       break;
   }
 });
 
 // Log our bot in using the token from https://discord.com/developers/applications
-client.login('ODAxMDIzMjM1NTU4NjA0ODIx.YAapBQ.X7V_6UO97NkWITEc10MDVO6NPpE');
-
-// getPlayer('YoDaSL Raiz 2k17');
+client.login(process.env.DISCORD_API_KEY);
