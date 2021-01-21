@@ -42,10 +42,10 @@ const createChannel = async (msg, participants, gameId) => {
   return { status: 'success', channel };
 };
 
-const deleteChannel = (guild) => {
-  const fetchedChannel = guild.channels.cache.get('801726202368360458');
+const deleteChannel = (guild, channel_id) => {
+  const fetchedChannel = guild.channels.cache.get(channel_id);
 
-  console.log(fetchedChannel);
+  fetchedChannel.delete();
 };
 
 module.exports = {
