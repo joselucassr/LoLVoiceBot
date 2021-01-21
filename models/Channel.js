@@ -1,8 +1,15 @@
 const mongoose = require('mongoose');
 
 const channelSchema = new mongoose.Schema({
+  channel_id: {
+    type: String,
+  },
   channel_game_id: {
     type: String,
+  },
+  channel_game_is_active: {
+    type: Boolean,
+    default: true,
   },
   channel_team_id: {
     type: String,
