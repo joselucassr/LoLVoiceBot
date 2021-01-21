@@ -28,7 +28,7 @@ const notifyNewGame = async (users, channel) => {
       const member = await users.fetch(playersDisIds[i], true);
 
       const embed = new Discord.MessageEmbed()
-        .setTitle(`• Canal criado! criado`)
+        .setTitle(`• Canal criado!`)
         .setDescription(
           `➜ O canal do **Jogo: ${channel_game_id}** pode ser encontrado no topo da lista de canais do servidor.`,
         )
