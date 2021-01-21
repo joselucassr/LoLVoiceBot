@@ -5,13 +5,18 @@ const Discord = require('discord.js');
 
 // Function imports
 const { inQuot, inArgs } = require('./utils/getInput');
-const { simpleEmbed, updateEmbed } = require('./utils/embed');
+const { simpleEmbed, completeEmbed } = require('./utils/embed');
+const { checkRole } = require('./utils/checker');
 const {
   notifyNewGame,
   askUserForGame,
   endGameQuestions,
 } = require('./utils/sendDM');
-const { registerPlayer } = require('./commands/managePlayer');
+const {
+  registerPlayer,
+  updatePlayer,
+  deletePlayer,
+} = require('./commands/managePlayer');
 const { joinGame, stopGame } = require('./commands/manageGame');
 
 // Create an instance of a Discord client
@@ -107,10 +112,14 @@ client.on('messageReactionAdd', async (msgReaction, user) => {
   ) {
     await stopGame(user.id, guild);
     msgReaction.message.delete();
-    simpleEmbed(
+    completeEmbed(
       msgReaction.message,
-      'Canal removido',
-      'Espero que tenha aproveitado bem o nosso Voice Bot :D',
+      '• GGWP e até a próxima invocador!',
+      'Canal fechado, espero que tenha aproveitado bem o nosso Voice Bot :D',
+      'https://static.wikia.nocookie.net/leagueoflegends/images/2/29/Honor_GG.png',
+      'https://static.wikia.nocookie.net/leagueoflegends/images/1/13/Fat_Poro.jpg',
+      [],
+      'Fim da partida',
       false,
     );
   }
@@ -137,16 +146,98 @@ client.on('message', async (msg) => {
   const guild = await client.guilds.fetch('801023966126145576');
 
   switch (command) {
-    case 'register':
+    case 'register': {
+      let roleCheck = await checkRole(msg);
+      if (roleCheck === 'noPerm') return;
+
       let summName = await inQuot(msg);
       let args = await inArgs(msg);
 
       if (summName === 'stop') {
         return 0;
       }
-      await registerPlayer(msg, summName, args);
+      const returnObj = await registerPlayer(msg, summName, args);
+
+      if (returnObj.status === 'alreadyRegistered') {
+        return await simpleEmbed(
+          msg,
+          `Jogador(a) já está registrado(a)`,
+          `<@${returnObj.discordID}> **/ ${summName}** já registrado(a). \nTalvez você queira usar 'l!update' para atualizar o nome de invocador.`,
+        );
+      }
+
+      if (returnObj.status === 'playerRegistered') {
+        return await simpleEmbed(
+          msg,
+          `Jogador(a) registrado(a) com sucesso`,
+          `<@${returnObj.discordID}> **/ ${summName}** registrado(a). \nFuncionalidades completas do bot desbloqueadas.`,
+        );
+      }
+
+      if (returnObj.status === 'error') {
+        return await simpleEmbed(msg, `Erro`, `Um erro inexperado aconteceu.`);
+      }
 
       break;
+    }
+
+    case 'update': {
+      let roleCheck = await checkRole(msg);
+      if (roleCheck === 'noPerm') return;
+
+      let summName = await inQuot(msg);
+      let args = await inArgs(msg);
+
+      if (summName === 'stop') {
+        return 0;
+      }
+      const returnObj = await updatePlayer(msg, summName, args);
+
+      if (returnObj.status === 'notRegistered') {
+        return await simpleEmbed(
+          msg,
+          `Jogador(a) não está registrado(a)`,
+          `<@${returnObj.discordID}> **/ ${summName}** não pode ser encontrado(a). \nTalvez você queira usar 'l!register' para registrar o(a) jogador(a).`,
+        );
+      }
+
+      if (returnObj.status === 'playerUpdated') {
+        return await simpleEmbed(
+          msg,
+          `Jogador(a) atualizado(a) com sucesso`,
+          `<@${returnObj.discordID}> **/ ${summName}** atualizado(a) \nCaso queira atualizar novamente basta usar o 'l!update'.`,
+        );
+      }
+
+      break;
+    }
+
+    case 'delete': {
+      let roleCheck = await checkRole(msg);
+      if (roleCheck === 'noPerm') return;
+
+      let args = await inArgs(msg);
+
+      const returnObj = await deletePlayer(msg, args);
+
+      if (returnObj.status === 'notRegistered') {
+        return await simpleEmbed(
+          msg,
+          `Jogador(a) não está registrado`,
+          `<@${returnObj.discordID}> não pode ser encontrado(a). \nTalvez você queira usar 'l!register' para registrar o(a) jogador(a).`,
+        );
+      }
+
+      if (returnObj.status === 'playerDeleted') {
+        return await simpleEmbed(
+          msg,
+          `Jogador(a) deletado(a) com sucesso`,
+          `<@${returnObj.player.player_discord_id}> **/ ${returnObj.player.player_summ_name}** removido(a). \nCaso queira registrar novamente basta usar 'l!register'.`,
+        );
+      }
+
+      break;
+    }
 
     case 'join':
       const returnObj = await joinGame(msg.author.id, guild);
@@ -158,7 +249,7 @@ client.on('message', async (msg) => {
       if (returnObj.status === 'notFound') {
         return await simpleEmbed(
           msg,
-          'Você ainda não foi registrado',
+          'Você ainda não foi registrado(a)',
           `Basta enviar uma mensagem para um de nossos moderadores pelo lol e aguardar.`,
         );
       }

@@ -72,7 +72,7 @@ const askUserForGame = async (users, player_discord_id) => {
       `<:missing:801812715685412915> Deseja criar uma sala de Voice Chat com seu time?`,
     )
     .setThumbnail(
-      'https://static.wikia.nocookie.net/leagueoflegends/images/2/29/Honor_GG.png',
+      'https://static.wikia.nocookie.net/leagueoflegends/images/d/db/Nexus_Blitz_Prize_Fight_event.png',
     )
     .setImage(
       'https://static.wikia.nocookie.net/leagueoflegends/images/1/13/Fat_Poro.jpg',
@@ -111,10 +111,23 @@ const endGameQuestions = async (users, player_discord_id) => {
   }
 
   const embed = new Discord.MessageEmbed()
-    .setTitle(`Deseja encerrar o canal de voz?`)
+    .setTitle(`• GGWP e até a próxima invocador!`)
     .setDescription(
-      `Percebi que a partida acabou, deseja encerrar o canal de voz agora? \nBasta não reagir abaixo que manterei ela até todos saírem.`,
+      `Percebi que a partida acabou, deseja encerrar o canal de voz agora?`,
     )
+    .setThumbnail(
+      'https://static.wikia.nocookie.net/leagueoflegends/images/2/29/Honor_GG.png',
+    )
+    .setImage(
+      'https://static.wikia.nocookie.net/leagueoflegends/images/1/13/Fat_Poro.jpg',
+    )
+    .spliceFields(0, 0, [
+      {
+        name: '- Como que faz?',
+        value:
+          '**__Basta clicar na reação ✅ abaixo.__ \nOu não fazer nada e manterei ela até todos saírem.**',
+      },
+    ])
     .setFooter('Fim da partida')
     .setTimestamp(Date.now())
     .setColor('#5bc0e3');

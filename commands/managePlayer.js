@@ -34,11 +34,6 @@ const getMatch = async (playerRiotID) => {
 
     if (spectator.status === 200) {
       return spectator;
-      for (let i = 0; i < spectator.data.participants.length; i++) {
-        summsList =
-          summsList + `${spectator.data.participants[i].summonerName}, \n`;
-      }
-      return summsList;
     } else {
       return 'notPlaying';
     }
@@ -78,8 +73,10 @@ const registerPlayer = async (msg, summonerName, args) => {
 
     let player = await Player.findOne({ player_riot_id: summoner.id });
 
+    console.log(player);
+
     if (player) {
-      return { status: 'alreadyRegistered' };
+      return { status: 'alreadyRegistered', discordID };
     }
 
     let playerFields = {
@@ -92,7 +89,70 @@ const registerPlayer = async (msg, summonerName, args) => {
 
     await newPlayer.save();
 
-    return { status: 'playerRegistered', newPlayer };
+    await msg.member.roles.add('801845168289349632');
+    await msg.member.roles.remove('801845304281923655');
+
+    return { status: 'playerRegistered', discordID };
+  } catch (err) {
+    console.log(err.message);
+    return { status: 'error' };
+  }
+};
+
+const updatePlayer = async (msg, summonerName, args) => {
+  try {
+    let discordID = '';
+
+    // Get by mention or ID
+    if (msg.mentions.users.first()) {
+      discordID = msg.mentions.users.first().id;
+    } else {
+      discordID = args[1];
+    }
+
+    let summoner = await getSummoner(summonerName);
+
+    let player = await Player.findOne({ player_discord_id: discordID });
+
+    if (!player) {
+      return { status: 'notRegistered', discordID };
+    }
+
+    player.player_riot_id = summoner.id;
+    player.player_summ_name = summonerName;
+
+    await player.save();
+
+    return { status: 'playerUpdated', discordID };
+  } catch (err) {
+    console.log(err.message);
+    return 'error';
+  }
+};
+
+const deletePlayer = async (msg, args) => {
+  try {
+    let discordID = '';
+
+    // Get by mention or ID
+    if (msg.mentions.users.first()) {
+      discordID = msg.mentions.users.first().id;
+    } else {
+      discordID = args[1];
+    }
+
+    let player = await Player.findOne({ player_discord_id: discordID });
+
+    if (!player) {
+      return { status: 'notRegistered', discordID };
+    }
+
+    await player.delete();
+
+    await msg.member.roles.remove('801845168289349632');
+    await msg.member.roles.add('801845304281923655');
+
+    return { status: 'playerDeleted', player };
   } catch (err) {
     console.log(err.message);
     return 'error';
@@ -104,4 +164,6 @@ module.exports = {
   getMatch,
   getPlayerbyDisId,
   registerPlayer,
+  updatePlayer,
+  deletePlayer,
 };

@@ -22,6 +22,11 @@ const createChannel = async (guild, participants, gameId) => {
       id: guild.roles.everyone.id,
       deny: ['VIEW_CHANNEL', 'CONNECT'],
     },
+    {
+      type: 'role',
+      id: '801845168289349632',
+      allow: ['MOVE_MEMBERS'],
+    },
   ];
 
   for (let i = 0; i < playersDisIds.length; i++) {
